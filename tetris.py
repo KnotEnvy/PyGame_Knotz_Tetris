@@ -3,6 +3,7 @@ import math
 from tetromino import Tetromino
 import pygame.freetype as ft
 
+
 class Text:
     def __init__(self, app):
         self.app = app

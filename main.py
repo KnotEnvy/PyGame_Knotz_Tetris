@@ -2,6 +2,30 @@ from settings import *
 from tetris import Tetris, Text
 import sys
 import pathlib
+import pygame.mixer
+import aubio
+import numpy as np
+from effects import MusicVisuals
+
+# Initialize the music mixer
+pygame.mixer.init()
+
+# Load and play the music
+music_file = 'sounds/8. Electric Moments.wav'  # Replace with the path to your music file
+pygame.mixer.music.load(music_file)
+pygame.mixer.music.play()
+
+# Set up aubio to analyze the music
+win_s = 1024
+hop_s = win_s // 2
+aubio_source = aubio.source(music_file, samplerate=0, hop_size=hop_s)
+samplerate = aubio_source.samplerate
+
+# Set up the pitch and beat detection
+pitch_o = aubio.pitch('default', win_s, hop_s, samplerate)
+pitch_o.set_unit('Hz')
+pitch_o.set_silence(-40)
+tempo_o = aubio.tempo('default', win_s, hop_s, samplerate)
 
 
 class App:
@@ -12,6 +36,7 @@ class App:
         self.clock = pg.time.Clock()
         self.set_timer()
         self.images = self.load_images()
+        self.music_visuals = MusicVisuals(self)
         self.tetris = Tetris(self)
         self.text = Text(self)
 
@@ -32,10 +57,33 @@ class App:
     def update(self):
         self.tetris.update()
         self.clock.tick(FPS)
+        music_data = self.get_music_data()  # Implement this method to get the music data
+        self.music_visuals.update(music_data)
+
+    def get_music_data(self):
+        samples, read = aubio_source()
+        pitch = pitch_o(samples)[0]
+        is_beat = tempo_o(samples)
+        return pitch, is_beat
 
     def draw(self):
+        # Analyze the current music frame
+        samples, read = aubio_source()
+        pitch = pitch_o(samples)[0]
+        is_beat = tempo_o(samples)
+        # React to pitch and beat
+        if is_beat:
+            # Do something when a beat is detected (e.g., change the background color)
+            pass
+
+        # Create special effects based on the pitch (e.g., animate shapes)
+        # ...
+
+        # Draw rest of  game
         self.screen.fill(color = BG_COLOR)
+        
         self.screen.fill(color=FIELD_COLOR, rect= (0,0, *FIELD_RES))
+        self.music_visuals.draw()
         self.tetris.draw()
         self.text.draw()
         pg.display.flip()
