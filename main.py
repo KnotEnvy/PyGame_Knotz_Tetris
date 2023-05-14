@@ -5,7 +5,7 @@ import pathlib
 import pygame.mixer
 import aubio
 import numpy as np
-from effects import MusicVisuals
+from effects3 import MusicVisuals
 
 # Initialize the music mixer
 pygame.mixer.init()
